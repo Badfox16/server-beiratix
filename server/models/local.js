@@ -1,5 +1,5 @@
-const mongoose = require('mongoose');
-const Schema = mongoose.Schema;
+import { Schema as _Schema, model } from 'mongoose';
+const Schema = _Schema;
 
 const localSchema = new Schema({
     nome: {
@@ -19,7 +19,7 @@ const localSchema = new Schema({
         trim: true
     },
     categoria: {
-        type: mongoose.Schema.Types.ObjectId, // Agora referencia o ID de uma Categoria
+        type: _Schema.Types.ObjectId, // Agora referencia o ID de uma Categoria
         ref: 'Categoria',                   // Nome do modelo referenciado
         required: [true, 'A categoria é obrigatória.']
     },
@@ -49,4 +49,4 @@ localSchema.virtual('eventos', {
 });
 
 
-module.exports = mongoose.model('Local', localSchema);
+export default model('Local', localSchema);

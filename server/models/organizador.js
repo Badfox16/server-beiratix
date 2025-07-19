@@ -1,5 +1,5 @@
-const mongoose = require('mongoose');
-const Schema = mongoose.Schema;
+import { Schema as _Schema, model } from 'mongoose';
+const Schema = _Schema;
 
 const organizadorSchema = new Schema({
     nome: {
@@ -45,4 +45,4 @@ organizadorSchema.virtual('eventosOrganizados', {
     foreignField: 'id_organizador' // ...campo 'id_organizador' corresponde ao '_id' deste organizador.
 });
 
-module.exports = mongoose.model('Organizador', organizadorSchema);
+export default model('Organizador', organizadorSchema);

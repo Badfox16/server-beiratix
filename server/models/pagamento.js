@@ -1,22 +1,22 @@
-const mongoose = require('mongoose');
-const Schema = mongoose.Schema;
+import { Schema as _Schema, model } from 'mongoose';
+const Schema = _Schema;
 
 const pagamentoSchema = new Schema({
     // Referência ao utilizador que fez o pagamento
     id_usuario: {
-        type: mongoose.Schema.Types.ObjectId,
+        type: _Schema.Types.ObjectId,
         ref: 'Usuario',
         required: [true, 'O pagamento deve estar associado a um utilizador.']
     },
     // Referência ao bilhete específico que foi comprado
     id_bilhete: {
-        type: mongoose.Schema.Types.ObjectId,
+        type: _Schema.Types.ObjectId,
         ref: 'Bilhete',
         required: [true, 'O pagamento deve estar associado a um bilhete.']
     },
     // Referência ao evento (opcional, pois já temos via bilhete, mas pode ser útil para consultas diretas)
     id_evento: {
-        type: mongoose.Schema.Types.ObjectId,
+        type: _Schema.Types.ObjectId,
         ref: 'Evento',
         required: [true, 'O pagamento deve estar associado a um evento.']
     },
@@ -62,4 +62,4 @@ const pagamentoSchema = new Schema({
     timestamps: true // Adiciona `createdAt` e `updatedAt`
 });
 
-module.exports = mongoose.model('Pagamento', pagamentoSchema);
+export default model('Pagamento', pagamentoSchema);

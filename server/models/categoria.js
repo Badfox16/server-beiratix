@@ -1,5 +1,5 @@
-const mongoose = require('mongoose');
-const Schema = mongoose.Schema;
+import { Schema as _Schema, model } from 'mongoose';
+const Schema = _Schema;
 
 const categoriaSchema = new Schema({
     nome: {
@@ -24,4 +24,4 @@ const categoriaSchema = new Schema({
     timestamps: true // Adiciona `createdAt` e `updatedAt`
 });
 
-module.exports = mongoose.model('Categoria', categoriaSchema);
+export default model('Categoria', categoriaSchema);

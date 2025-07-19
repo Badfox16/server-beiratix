@@ -8,13 +8,13 @@ const { faker } = require('@faker-js/faker');
 dotenv.config();
 
 // Importar os modelos Mongoose
-const Categoria = require('./models/categoria');
+const Categoria = require('./models/categoria').default;
 const Usuario = require('./models/usuario');
-const Organizador = require('./models/organizador');
-const Local = require('./models/local');
+const Organizador = require('./models/organizador').default;
+const Local = require('./models/local').default;
 const Evento = require('./models/evento');
 const Bilhete = require('./models/bilhete');
-const Pagamento = require('./models/pagamento');
+const Pagamento = require('./models/pagamento').default;
 
 // --- FUNÇÃO PARA DESTRUIR DADOS ---
 const destroyData = async () => {
