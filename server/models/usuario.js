@@ -1,34 +1,50 @@
-const mongoose = require('mongoose');
-const Schema = mongoose.Schema;
+import mongoose from 'mongoose';
+import bcrypt from 'bcryptjs';
 
-const usuarioSchema = new Schema({
+const usuarioSchema = new mongoose.Schema({
     nome: {
         type: String,
         required: [true, 'O nome é obrigatório.'],
-        trim: true // Remove espaços em branco no início e no fim
+        trim: true
     },
     email: {
         type: String,
         required: [true, 'O email é obrigatório.'],
-        unique: true, // Garante que cada email seja único na base de dados
+        unique: true,
         trim: true,
-        lowercase: true, // Converte o email para letras minúsculas antes de salvar
+        lowercase: true,
         match: [/.+\@.+\..+/, 'Por favor, insira um email válido.']
     },
-    // --- CAMPO ADICIONADO ---
     telefone: {
         type: String,
-        unique: true, // Garante que o número de telefone também seja único
-        sparse: true, // Permite que o campo seja nulo para vários utilizadores, sem violar a regra "unique"
+        unique: true,
+        sparse: true,
         trim: true
     },
     senha: {
         type: String,
-        required: [true, 'A senha é obrigatória.']
+        required: [true, 'A senha é obrigatória.'],
+        select: false // Não inclui a senha por defeito nas queries
     }
 }, {
-    // Adiciona os campos `createdAt` e `updatedAt` automaticamente
     timestamps: true
 });
 
-module.exports = mongoose.model('Usuario', usuarioSchema);
+// Middleware (hook) para fazer o hash da senha ANTES de salvar
+usuarioSchema.pre('save', async function(next) {
+    // Só faz o hash se a senha foi modificada (ou é nova)
+    if (!this.isModified('senha')) {
+        return next();
+    }
+    // Gera o "salt" e faz o hash da senha
+    const salt = await bcrypt.genSalt(10);
+    this.senha = await bcrypt.hash(this.senha, salt);
+    next();
+});
+
+// Método para comparar a senha fornecida com a senha na base de dados
+usuarioSchema.methods.compararSenha = async function(senhaFornecida) {
+    return await bcrypt.compare(senhaFornecida, this.senha);
+};
+
+export default mongoose.model('Usuario', usuarioSchema);

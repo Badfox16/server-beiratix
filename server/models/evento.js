@@ -1,7 +1,6 @@
-const mongoose = require('mongoose');
-const Schema = mongoose.Schema;
+import mongoose from 'mongoose';
 
-const eventoSchema = new Schema({
+const eventoSchema = new mongoose.Schema({
     titulo: {
         type: String,
         required: [true, 'O título do evento é obrigatório.'],
@@ -12,33 +11,30 @@ const eventoSchema = new Schema({
         required: [true, 'A descrição do evento é obrigatória.'],
         trim: true
     },
+    // --- Campo Adicionado ---
+    id_organizador: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Organizador',
+        required: [true, 'O evento deve ter um organizador.']
+    },
     id_local: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Local',
         required: [true, 'O local do evento é obrigatório.']
     },
-    data: {
+    // --- Datas Refatoradas ---
+    dataInicio: {
         type: Date,
-        required: [true, 'A data do evento é obrigatória.']
+        required: [true, 'A data e hora de início do evento são obrigatórias.']
     },
-    horaInicio: {
-        type: String,
-        required: [true, 'A hora de início do evento é obrigatória.'],
-        trim: true
-    },
-    horaFim: {
-        type: String,
-        trim: true
+    dataFim: {
+        type: Date,
+        required: [true, 'A data e hora de fim do evento são obrigatórias.']
     },
     categoria: {
-        type: mongoose.Schema.Types.ObjectId, // Agora referencia o ID de uma Categoria
-        ref: 'Categoria',                   // Nome do modelo referenciado
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Categoria',
         required: [true, 'A categoria é obrigatória.']
-    },
-    capacidadeReservada: {
-        type: Number,
-        default: 0,
-        min: 0
     },
     imageUrl: {
         type: String,
@@ -54,30 +50,20 @@ const eventoSchema = new Schema({
     toObject: { virtuals: true }
 });
 
-// Validação de hora de término
+// Validação de data de término
 eventoSchema.pre('save', function (next) {
-    if (this.horaInicio && this.horaFim) {
-        const [hInicio, mInicio] = this.horaInicio.split(':').map(Number);
-        const [hFim, mFim] = this.horaFim.split(':').map(Number);
-
-        if (hFim < hInicio || (hFim === hInicio && mFim <= mInicio)) {
-            next(new Error('A hora de término deve ser depois da hora de início.'));
-        } else {
-            next();
-        }
+    if (this.dataInicio && this.dataFim && this.dataFim <= this.dataInicio) {
+        next(new Error('A data de término deve ser posterior à data de início.'));
     } else {
         next();
     }
 });
 
-// --- RELACIONAMENTO VIRTUAL COM BILHETES ---
-// Este campo 'bilhetes' não será guardado na base de dados.
-// É um campo virtual que cria a ligação entre um Evento e todos os Bilhetes disponíveis para ele.
+// Relação virtual com Bilhetes
 eventoSchema.virtual('bilhetes', {
-    ref: 'Bilhete',         // O modelo a ser populado (o modelo Bilhete)
-    localField: '_id',      // Encontra documentos no modelo Bilhete onde o...
-    foreignField: 'id_evento' // ...campo 'id_evento' corresponde ao '_id' deste evento.
+    ref: 'Bilhete',
+    localField: '_id',
+    foreignField: 'id_evento'
 });
 
-
-module.exports = mongoose.model('Evento', eventoSchema);
+export default mongoose.model('Evento', eventoSchema);

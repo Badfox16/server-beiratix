@@ -1,35 +1,48 @@
-const mongoose = require('mongoose');
-const Schema = mongoose.Schema;
+import mongoose from 'mongoose';
+import { randomBytes } from 'crypto'; // Módulo nativo do Node.js
 
-const bilheteSchema = new Schema({
-    // --- Referência ao Evento ---
+const bilheteSchema = new mongoose.Schema({
     id_evento: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Evento',
         required: [true, 'O bilhete deve estar associado a um evento.']
     },
+    // --- Campo Adicionado para identificar o bilhete individual ---
+    id_pagamento: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Pagamento',
+        required: true
+    },
+    // --- Campo Adicionado para o comprador ---
+    id_usuario: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Usuario',
+        required: true
+    },
     tipo: {
         type: String,
-        required: [true, 'O tipo de bilhete é obrigatório (ex: Normal, VIP, Estudante).'],
+        required: true,
         trim: true
     },
     preco: {
         type: Number,
-        required: [true, 'O preço do bilhete é obrigatório.'],
+        required: true,
         min: 0
     },
-    quantidadeDisponivel: {
-        type: Number,
-        required: [true, 'A quantidade disponível de bilhetes é obrigatória.'],
-        min: 0,
-        default: 0
-    },
-    descricao: {
+    // --- Campo para o código único do bilhete ---
+    codigoUnico: {
         type: String,
-        trim: true // Detalhes adicionais sobre o tipo de bilhete
+        unique: true,
+        required: true,
+    },
+    // --- Estado do bilhete ---
+    estado: {
+        type: String,
+        enum: ['válido', 'utilizado', 'cancelado'],
+        default: 'válido'
     }
 }, {
-    timestamps: true // Adiciona createdAt e updatedAt
+    timestamps: true
 });
 
-module.exports = mongoose.model('Bilhete', bilheteSchema);
+export default mongoose.model('Bilhete', bilheteSchema);
