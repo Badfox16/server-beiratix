@@ -1,32 +1,33 @@
-import { Schema as _Schema, model } from 'mongoose';
-const Schema = _Schema;
+const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
 
 const pagamentoSchema = new Schema({
     // Referência ao utilizador que fez o pagamento
     id_usuario: {
-        type: _Schema.Types.ObjectId,
+        type: mongoose.Schema.Types.ObjectId,
         ref: 'Usuario',
         required: [true, 'O pagamento deve estar associado a um utilizador.']
     },
-    // Referência ao bilhete específico que foi comprado
-    id_bilhete: {
-        type: _Schema.Types.ObjectId,
-        ref: 'Bilhete',
-        required: [true, 'O pagamento deve estar associado a um bilhete.']
+    // --- CAMPO ALTERADO ---
+    // Referência ao tipo de bilhete que foi comprado
+    id_tipoBilhete: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'TipoBilhete', // Referência correta
+        required: [true, 'O pagamento deve estar associado a um tipo de bilhete.']
     },
-    // Referência ao evento (opcional, pois já temos via bilhete, mas pode ser útil para consultas diretas)
+    // Referência ao evento (continua útil para consultas diretas)
     id_evento: {
-        type: _Schema.Types.ObjectId,
+        type: mongoose.Schema.Types.ObjectId,
         ref: 'Evento',
         required: [true, 'O pagamento deve estar associado a um evento.']
     },
-    // Valor total pago (pode ser diferente do preço do bilhete se houver descontos, taxas, etc.)
+    // Valor total pago
     valorTotal: {
         type: Number,
         required: [true, 'O valor total do pagamento é obrigatório.'],
         min: 0
     },
-    // Estado do pagamento (pendente, concluído, falhado, reembolsado)
+    // Estado do pagamento
     estado: {
         type: String,
         enum: ['pendente', 'concluído', 'falhado', 'reembolsado'],
@@ -34,32 +35,27 @@ const pagamentoSchema = new Schema({
         required: [true, 'O estado do pagamento é obrigatório.'],
         trim: true
     },
-    // Método de pagamento (cartão de crédito, M-Pesa, e-Mola, etc.)
+    // Método de pagamento
     metodoPagamento: {
         type: String,
         required: [true, 'O método de pagamento é obrigatório.'],
         trim: true
     },
-    // Data/hora da transação (timestamps do schema já cobrem isso, mas pode ser útil para um campo específico de transação)
-    dataPagamento: {
-        type: Date,
-        default: Date.now // Define a data de pagamento para o momento da criação, pode ser atualizada
-    },
-    // ID da transação do provedor de pagamento (ex: Stripe, PayPal, M-Pesa transaction ID)
+    // ID da transação do provedor de pagamento
     transacaoId: {
         type: String,
         unique: true,
-        sparse: true, // Permite nulos se a transação falhar ou não tiver ID externo
+        sparse: true,
         trim: true
     },
-    // Quantidade de bilhetes comprados nesta transação (se um pagamento puder comprar múltiplos do mesmo tipo de bilhete)
+    // Quantidade de bilhetes comprados nesta transação
     quantidadeBilhetes: {
         type: Number,
         required: [true, 'A quantidade de bilhetes comprados é obrigatória.'],
         min: 1
     }
 }, {
-    timestamps: true // Adiciona `createdAt` e `updatedAt`
+    timestamps: true 
 });
 
-export default model('Pagamento', pagamentoSchema);
+module.exports = mongoose.model('Pagamento', pagamentoSchema);
