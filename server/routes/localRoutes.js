@@ -1,6 +1,7 @@
 import express from 'express';
 import {
     createLocal,
+    addImagesToLocal,
     getAllLocais,
     getLocalById,
     updateLocal,
@@ -21,5 +22,8 @@ router.route('/:id')
     .get(getLocalById)
     .put(checkJwt, imageUploadHandler, validateLocal, handleValidationErrors, updateLocal)
     .delete(checkJwt, deleteLocal);
+
+router.route('/:id/images')
+    .post(checkJwt, imageUploadHandler, handleValidationErrors, addImagesToLocal);
 
 export default router;

@@ -1,4 +1,4 @@
-import Local from '../models/local.js';
+import Local from '@/models/local.js';
 import asyncHandler from 'express-async-handler';
 import ErrorResponse from '@/utils/errorResponse.js';
 
@@ -6,13 +6,34 @@ import ErrorResponse from '@/utils/errorResponse.js';
 // @route   POST /api/v1/locais
 // @access  Privado
 const createLocal = asyncHandler(async (req, res, next) => {
-    // Adiciona a URL da imagem do Cloudinary, se existir
-    if (req.cloudinaryUrl) {
-        req.body.imagemUrl = req.cloudinaryUrl;
+    // Adiciona as URLs das imagens do Cloudinary, se existirem
+    if (req.cloudinaryUrls) {
+        req.body.imagens = req.cloudinaryUrls;
     }
 
     const local = await Local.create(req.body);
     res.success(local, 201);
+});
+
+// @desc    Adiciona imagens a um local existente
+// @route   POST /api/v1/locais/:id/images
+// @access  Privado
+const addImagesToLocal = asyncHandler(async (req, res, next) => {
+    if (!req.cloudinaryUrls || req.cloudinaryUrls.length === 0) {
+        return next(new ErrorResponse('Nenhuma imagem para adicionar.', 400));
+    }
+
+    const local = await Local.findById(req.params.id);
+
+    if (!local) {
+        return next(new ErrorResponse(`Local não encontrado com o id ${req.params.id}`, 404));
+    }
+
+    // Adiciona as novas imagens ao array existente
+    local.imagens.push(...req.cloudinaryUrls);
+    await local.save();
+
+    res.success(local);
 });
 
 // @desc    Retorna todos os locais
@@ -41,9 +62,10 @@ const getLocalById = asyncHandler(async (req, res, next) => {
 // @route   PUT /api/v1/locais/:id
 // @access  Privado
 const updateLocal = asyncHandler(async (req, res, next) => {
-    // Adiciona a URL da imagem do Cloudinary, se existir
-    if (req.cloudinaryUrl) {
-        req.body.imagemUrl = req.cloudinaryUrl;
+    // Se novas imagens forem enviadas, elas substituem as antigas.
+    // Para adição, use o endpoint /images
+    if (req.cloudinaryUrls) {
+        req.body.imagens = req.cloudinaryUrls;
     }
 
     const local = await Local.findByIdAndUpdate(req.params.id, req.body, {
@@ -70,6 +92,7 @@ const deleteLocal = asyncHandler(async (req, res, next) => {
 
 export {
     createLocal,
+    addImagesToLocal,
     getAllLocais,
     getLocalById,
     updateLocal,

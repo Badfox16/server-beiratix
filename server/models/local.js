@@ -27,9 +27,9 @@ const localSchema = new Schema({
         type: Number,
         min: 0
     },
-    imagemUrl: {
-        type: String,
-        trim: true
+    imagens: {
+        type: [String],
+        default: []
     }
 }, {
     // Opções do Schema
