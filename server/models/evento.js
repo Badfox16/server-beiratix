@@ -11,7 +11,6 @@ const eventoSchema = new mongoose.Schema({
         required: [true, 'A descrição do evento é obrigatória.'],
         trim: true
     },
-    // --- Campo Adicionado ---
     id_organizador: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Organizador',
@@ -22,7 +21,6 @@ const eventoSchema = new mongoose.Schema({
         ref: 'Local',
         required: [true, 'O local do evento é obrigatório.']
     },
-    // --- Datas Refatoradas ---
     dataInicio: {
         type: Date,
         required: [true, 'A data e hora de início do evento são obrigatórias.']
@@ -44,18 +42,18 @@ const eventoSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
-    status: {
+    estado: {
         type: String,
-        enum: ['available', 'almost-sold', 'sold-out', 'cancelled', 'postponed'],
-        default: 'available'
+        enum: ['disponível', 'quase-esgotado', 'esgotado', 'cancelado', 'adiado'],
+        default: 'disponível'
     },
-    rating: {
+    avaliacao: {
         type: Number,
         min: 0,
         max: 5,
         default: 0
     },
-    highlights: {
+    destaques: {
         type: [String],
         default: []
     },
