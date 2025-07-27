@@ -4,6 +4,9 @@ import {
     getPagamentoById,
     handlePagamentoWebhook
 } from '@/controllers/pagamentoController.js';
+import checkJwt from '@/middleware/authMiddleware.js';
+import { validatePagamento } from '@/validators/pagamentoValidators.js';
+import handleValidationErrors from '@/middleware/handleValidationErrors.js';
 
 const router = express.Router();
 
@@ -11,10 +14,10 @@ const router = express.Router();
 // Ex: POST /api/v1/pagamentos
 // Corpo: { id_tipoBilhete: "...", quantidade: 2, metodoPagamento: "M-Pesa" }
 router.route('/')
-    .post(createPagamento);
+    .post(checkJwt, validatePagamento, handleValidationErrors, createPagamento);
 
 router.route('/:id')
-    .get(getPagamentoById);
+    .get(checkJwt, getPagamentoById);
 
 // Rota para receber a confirmação do provedor de pagamento (ex: M-Pesa, Stripe)
 // Ex: POST /api/v1/pagamentos/webhook

@@ -6,17 +6,20 @@ import {
     updateLocal,
     deleteLocal
 } from '@/controllers/localController.js';
+import checkJwt from '@/middleware/authMiddleware.js';
+import imageUploadHandler from '@/middleware/imageUploadHandler.js';
+import { validateLocal } from '@/validators/localValidators.js';
+import handleValidationErrors from '@/middleware/handleValidationErrors.js';
 
 const router = express.Router();
 
-// O middleware `imageUploadHandler` será adicionado aqui no futuro para o upload de imagens
 router.route('/')
-    .post(createLocal)
+    .post(checkJwt, imageUploadHandler, validateLocal, handleValidationErrors, createLocal)
     .get(getAllLocais);
 
 router.route('/:id')
     .get(getLocalById)
-    .put(updateLocal)
-    .delete(deleteLocal);
+    .put(checkJwt, imageUploadHandler, validateLocal, handleValidationErrors, updateLocal)
+    .delete(checkJwt, deleteLocal);
 
 export default router;
