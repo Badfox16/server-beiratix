@@ -1,10 +1,10 @@
 import express from 'express';
 import dotenv from 'dotenv';
-import { connectToDatabase } from './config/db.js'; 
+import { connectToDatabase } from '@/config/db.js'; 
 
 // Importar os nossos middlewares
-import responseHandler from './middleware/responseHandler.js';
-import errorHandler from './middleware/errorHandler.js';
+import responseHandler from '@/middleware/responseHandler.js';
+import errorHandler from '@/middleware/errorHandler.js';
 
 dotenv.config();
 
@@ -26,7 +26,7 @@ app.use(responseHandler);
 // app.use('/api/v1/eventos', eventoRoutes);
 
 app.get('/', (req, res) => {
-  res.success({ message: 'Bem-vindo à API do EiTickets!' });
+  res.json({ success: true, message: 'Bem-vindo à API do EiTickets!' });
 });
 
 
