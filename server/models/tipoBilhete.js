@@ -6,15 +6,24 @@ const tipoBilheteSchema = new mongoose.Schema({
         ref: 'Evento',
         required: true
     },
-    tipo: {
+    nome: {
         type: String,
-        required: [true, 'O tipo de bilhete é obrigatório (ex: Normal, VIP).'],
+        required: [true, 'O nome do tipo de bilhete é obrigatório (ex: Normal, VIP).'],
+        trim: true
+    },
+    descricao: {
+        type: String,
         trim: true
     },
     preco: {
         type: Number,
         required: true,
         min: 0
+    },
+    moeda: {
+        type: String,
+        required: true,
+        default: 'MZN'
     },
     quantidadeTotal: {
         type: Number,
@@ -24,6 +33,11 @@ const tipoBilheteSchema = new mongoose.Schema({
     quantidadeVendida: {
         type: Number,
         default: 0
+    },
+    maxPorCompra: {
+        type: Number,
+        min: 1,
+        default: 10
     }
 }, { timestamps: true });
 

@@ -36,9 +36,36 @@ const eventoSchema = new mongoose.Schema({
         ref: 'Categoria',
         required: [true, 'A categoria é obrigatória.']
     },
-    imageUrl: {
+    images: {
+        type: [String],
+        default: []
+    },
+    featured: {
+        type: Boolean,
+        default: false
+    },
+    status: {
         type: String,
-        trim: true
+        enum: ['available', 'almost-sold', 'sold-out', 'cancelled', 'postponed'],
+        default: 'available'
+    },
+    rating: {
+        type: Number,
+        min: 0,
+        max: 5,
+        default: 0
+    },
+    highlights: {
+        type: [String],
+        default: []
+    },
+    faq: [{
+        question: { type: String, required: true },
+        answer: { type: String, required: true }
+    }],
+    mapCoordinates: {
+        lat: { type: Number },
+        lng: { type: Number }
     },
     criadoPor: {
         type: mongoose.Schema.Types.ObjectId,

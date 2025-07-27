@@ -18,10 +18,10 @@ const localSchema = new Schema({
         required: [true, 'O endereço é obrigatório.'],
         trim: true
     },
-    categoria: {
-        type: _Schema.Types.ObjectId, // Agora referencia o ID de uma Categoria
-        ref: 'Categoria',                   // Nome do modelo referenciado
-        required: [true, 'A categoria é obrigatória.']
+    tipo: {
+        type: String,
+        required: [true, 'O tipo de local é obrigatório.'],
+        trim: true
     },
     capacidade: {
         type: Number,

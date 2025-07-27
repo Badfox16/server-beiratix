@@ -5,23 +5,16 @@ const categoriaSchema = new Schema({
     nome: {
         type: String,
         required: [true, 'O nome da categoria é obrigatório.'],
-        unique: true, // Garante nomes de categorias únicos
+        unique: true,
         trim: true
     },
-    // Opcional: Para descrever o que a categoria representa
-    descricao: {
+    icon: {
         type: String,
-        trim: true
-    },
-    // Opcional: Se as categorias podem ser para locais, eventos ou ambos
-    tipo: {
-        type: String,
-        enum: ['local', 'evento', 'ambos'],
-        default: 'ambos',
+        required: [true, 'O ícone da categoria é obrigatório.'],
         trim: true
     }
 }, {
-    timestamps: true // Adiciona `createdAt` e `updatedAt`
+    timestamps: true
 });
 
 export default model('Categoria', categoriaSchema);
