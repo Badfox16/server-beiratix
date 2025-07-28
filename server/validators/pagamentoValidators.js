@@ -1,5 +1,19 @@
 import { body } from 'express-validator';
 
+export const validateCompraBilhete = [
+    body('id_tipoBilhete')
+        .isMongoId()
+        .withMessage('O ID do tipo de bilhete é inválido.'),
+    body('quantidade')
+        .isInt({ min: 1 })
+        .withMessage('A quantidade deve ser um número inteiro e pelo menos 1.'),
+    body('metodoPagamento')
+        .trim()
+        .notEmpty()
+        .withMessage('O método de pagamento é obrigatório.')
+];
+
+
 export const validatePagamento = [
     body('id_usuario')
         .notEmpty().withMessage('O ID do usuário é obrigatório.')

@@ -7,6 +7,12 @@ import ErrorResponse from '@/utils/errorResponse.js';
 // @route   POST /api/v1/eventos
 // @access  Privado
 const createEvento = asyncHandler(async (req, res, next) => {
+    // Adiciona o ID do utilizador que está a criar o evento
+    req.body.criadoPor = req.user._id;
+    // Associa também ao organizador, se o utilizador tiver essa ligação
+    // (Esta lógica pode ser mais complexa, por agora associamos ao utilizador)
+    req.body.id_organizador = req.user._id; 
+
     // Adiciona as URLs das imagens do Cloudinary, se existirem
     if (req.cloudinaryUrls) {
         req.body.images = req.cloudinaryUrls;
@@ -41,11 +47,7 @@ const addImagesToEvento = asyncHandler(async (req, res, next) => {
 // @route   GET /api/v1/eventos
 // @access  Público
 const getAllEventos = asyncHandler(async (req, res, next) => {
-    const eventos = await Evento.find({}).populate('tiposBilhete');
-    res.success({
-        count: eventos.length,
-        data: eventos
-    });
+    res.success(res.advancedResults);
 });
 
 // @desc    Retorna um evento específico

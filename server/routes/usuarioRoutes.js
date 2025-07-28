@@ -9,6 +9,8 @@ import {
 import checkJwt from '@/middleware/authMiddleware.js';
 import { validateCreateUsuario, validateUpdateUsuario } from '@/validators/usuarioValidators.js';
 import handleValidationErrors from '@/middleware/handleValidationErrors.js';
+import advancedResults from '@/middleware/advancedResults.js';
+import Usuario from '@/models/usuario.js';
 
 const router = express.Router();
 
@@ -16,7 +18,7 @@ const router = express.Router();
 // @route   POST, GET /api/v1/usuarios
 router.route('/')
     .post(checkJwt, validateCreateUsuario, handleValidationErrors, createUsuario)
-    .get(checkJwt, getAllUsuarios);
+    .get(checkJwt, advancedResults(Usuario), getAllUsuarios);
 
 // @desc    Obtém, atualiza ou apaga um utilizador por ID
 // @route   GET, PUT, DELETE /api/v1/usuarios/:id

@@ -15,11 +15,7 @@ const createUsuario = asyncHandler(async (req, res, next) => {
 // @route   GET /api/v1/usuarios
 // @access  Privado (Admin)
 const getAllUsuarios = asyncHandler(async (req, res, next) => {
-    const usuarios = await Usuario.find();
-    res.success({
-        count: usuarios.length,
-        data: usuarios
-    });
+    res.success(res.advancedResults);
 });
 
 // @desc    Retorna um usuário específico

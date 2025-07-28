@@ -1,6 +1,100 @@
-import Pagamento from '@/models/pagamento.js';
 import asyncHandler from 'express-async-handler';
+import mongoose from 'mongoose';
 import ErrorResponse from '@/utils/errorResponse.js';
+import Pagamento from '@/models/pagamento.js';
+import TipoBilhete from '@/models/tipoBilhete.js';
+import Bilhete from '@/models/bilhete.js';
+import Usuario from '@/models/usuario.js'; // Adicionado para verificar o utilizador
+
+// @desc    Processa a compra de um ou mais bilhetes
+// @route   POST /api/v1/pagamentos/comprar
+// @access  Privado
+const processarCompraBilhete = asyncHandler(async (req, res, next) => {
+    const { id_tipoBilhete, quantidade, metodoPagamento } = req.body;
+    const id_usuario_jwt = req.auth.sub; // Padrão do express-oauth2-jwt-bearer
+
+    if (!id_usuario_jwt) {
+        return next(new ErrorResponse('Utilizador não autenticado.', 401));
+    }
+
+    // Encontrar o nosso utilizador interno através do ID do JWT
+    const utilizador = await Usuario.findOne({ auth0Id: id_usuario_jwt });
+    if (!utilizador) {
+        return next(new ErrorResponse('Utilizador não encontrado no sistema.', 404));
+    }
+    const id_usuario = utilizador._id;
+
+    const tipoBilhete = await TipoBilhete.findById(id_tipoBilhete);
+
+    if (!tipoBilhete) {
+        return next(new ErrorResponse(`Tipo de bilhete com ID ${id_tipoBilhete} não encontrado.`, 404));
+    }
+
+    // 1. Verificar stock
+    const stockDisponivel = tipoBilhete.quantidadeTotal - tipoBilhete.quantidadeVendida;
+    if (stockDisponivel < quantidade) {
+        return next(new ErrorResponse(`Stock insuficiente. Apenas ${stockDisponivel} bilhetes disponíveis.`, 400));
+    }
+
+    // 2. Verificar limite por compra
+    if (quantidade > tipoBilhete.maxPorCompra) {
+        return next(new ErrorResponse(`A quantidade máxima por compra é ${tipoBilhete.maxPorCompra}.`, 400));
+    }
+
+    const valorTotal = tipoBilhete.preco * quantidade;
+
+    const session = await mongoose.startSession();
+    session.startTransaction();
+
+    try {
+        // 3. Criar o registo de pagamento
+        const pagamento = (await Pagamento.create([{
+            id_usuario,
+            id_tipoBilhete,
+            id_evento: tipoBilhete.id_evento,
+            valorTotal,
+            metodoPagamento,
+            quantidadeBilhetes: quantidade,
+            estado: 'concluído'
+        }], { session }))[0];
+
+        // 4. Atualizar o stock do tipo de bilhete
+        const updatedTipoBilhete = await TipoBilhete.findByIdAndUpdate(id_tipoBilhete, {
+            $inc: { quantidadeVendida: quantidade }
+        }, { new: true, session });
+
+        // 5. Criar os bilhetes individuais
+        const bilhetesParaCriar = [];
+        for (let i = 0; i < quantidade; i++) {
+            bilhetesParaCriar.push({
+                id_evento: tipoBilhete.id_evento,
+                id_pagamento: pagamento._id,
+                id_usuario,
+                tipo: tipoBilhete.nome,
+                preco: tipoBilhete.preco
+            });
+        }
+        const bilhetesCriados = await Bilhete.insertMany(bilhetesParaCriar, { session });
+
+        await session.commitTransaction();
+        session.endSession();
+
+        res.success({
+            pagamento,
+            bilhetes: bilhetesCriados
+        }, 201);
+
+    } catch (error) {
+        await session.abortTransaction();
+        session.endSession();
+        // Adicionar log do erro para depuração
+        console.error('Erro na transação de compra:', error);
+        next(new ErrorResponse('A transação falhou. Tente novamente.', 500));
+    }
+});
+
+
+// --- Funções existentes ---
 
 // @desc    Cria um novo pagamento (inicia o processo)
 // @route   POST /api/v1/pagamentos
@@ -34,6 +128,7 @@ const handlePagamentoWebhook = asyncHandler(async (req, res, next) => {
 
 
 export {
+    processarCompraBilhete,
     createPagamento,
     getPagamentoById,
     handlePagamentoWebhook

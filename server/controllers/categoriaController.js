@@ -14,11 +14,7 @@ const createCategoria = asyncHandler(async (req, res, next) => {
 // @route   GET /api/v1/categorias
 // @access  Público
 const getAllCategorias = asyncHandler(async (req, res, next) => {
-    const categorias = await Categoria.find({});
-    res.success({
-        count: categorias.length,
-        data: categorias
-    });
+    res.success(res.advancedResults);
 });
 
 // @desc    Retorna uma categoria específica

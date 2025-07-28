@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import { randomBytes } from 'crypto'; // Módulo nativo do Node.js
+import { randomBytes } from 'crypto';
 
 const bilheteSchema = new mongoose.Schema({
     id_evento: {
@@ -7,13 +7,11 @@ const bilheteSchema = new mongoose.Schema({
         ref: 'Evento',
         required: [true, 'O bilhete deve estar associado a um evento.']
     },
-    // --- Campo Adicionado para identificar o bilhete individual ---
     id_pagamento: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Pagamento',
         required: true
     },
-    // --- Campo Adicionado para o comprador ---
     id_usuario: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Usuario',
@@ -29,13 +27,11 @@ const bilheteSchema = new mongoose.Schema({
         required: true,
         min: 0
     },
-    // --- Campo para o código único do bilhete ---
     codigoUnico: {
         type: String,
         unique: true,
         required: true,
     },
-    // --- Estado do bilhete ---
     estado: {
         type: String,
         enum: ['válido', 'utilizado', 'cancelado'],
@@ -43,6 +39,15 @@ const bilheteSchema = new mongoose.Schema({
     }
 }, {
     timestamps: true
+});
+
+// Hook para gerar o código único antes de salvar
+bilheteSchema.pre('validate', function(next) {
+    if (this.isNew) {
+        // Gera um código mais curto e legível
+        this.codigoUnico = randomBytes(4).toString('hex').toUpperCase();
+    }
+    next();
 });
 
 export default mongoose.model('Bilhete', bilheteSchema);

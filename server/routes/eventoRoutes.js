@@ -15,12 +15,14 @@ import imageUploadHandler from '@/middleware/imageUploadHandler.js';
 import { validateEvento } from '@/validators/eventoValidators.js';
 import { validateTipoBilhete } from '@/validators/tipoBilheteValidators.js';
 import handleValidationErrors from '@/middleware/handleValidationErrors.js';
+import advancedResults from '@/middleware/advancedResults.js';
+import Evento from '@/models/evento.js';
 
 const router = express.Router();
 
 router.route('/')
-    .post(checkJwt, imageUploadHandler, validateEvento, handleValidationErrors, createEvento)
-    .get(getAllEventos);
+    .get(advancedResults(Evento, { path: 'tiposBilhete categoria', select: 'nome preco' }), getAllEventos)
+    .post(checkJwt, imageUploadHandler, validateEvento, handleValidationErrors, createEvento);
 
 router.route('/:id')
     .get(getEventoById)

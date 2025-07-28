@@ -24,6 +24,11 @@ const usuarioSchema = new mongoose.Schema({
         type: String,
         required: [true, 'O ID do Auth0 é obrigatório.'],
         unique: true
+    },
+    role: {
+        type: String,
+        enum: ['utilizador', 'organizador', 'admin'],
+        default: 'utilizador'
     }
 }, {
     timestamps: true

@@ -9,12 +9,14 @@ import {
 import checkJwt from '@/middleware/authMiddleware.js';
 import { validateCategoria } from '@/validators/categoriaValidators.js';
 import handleValidationErrors from '@/middleware/handleValidationErrors.js';
+import advancedResults from '@/middleware/advancedResults.js';
+import Categoria from '@/models/categoria.js';
 
 const router = express.Router();
 
 router.route('/')
-    .post(checkJwt, validateCategoria, handleValidationErrors, createCategoria)
-    .get(getAllCategorias);
+    .get(advancedResults(Categoria), getAllCategorias)
+    .post(checkJwt, validateCategoria, handleValidationErrors, createCategoria);
 
 router.route('/:id')
     .get(getCategoriaById)

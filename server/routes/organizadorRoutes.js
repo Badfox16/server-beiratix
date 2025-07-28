@@ -9,12 +9,14 @@ import {
 import checkJwt from '@/middleware/authMiddleware.js';
 import { validateOrganizador } from '@/validators/organizadorValidators.js';
 import handleValidationErrors from '@/middleware/handleValidationErrors.js';
+import advancedResults from '@/middleware/advancedResults.js';
+import Organizador from '@/models/organizador.js';
 
 const router = express.Router();
 
 router.route('/')
-    .post(checkJwt, validateOrganizador, handleValidationErrors, createOrganizador)
-    .get(getAllOrganizadores);
+    .get(advancedResults(Organizador, 'eventosOrganizados'), getAllOrganizadores)
+    .post(checkJwt, validateOrganizador, handleValidationErrors, createOrganizador);
 
 router.route('/:id')
     .get(getOrganizadorById)

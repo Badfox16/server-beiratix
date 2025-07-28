@@ -11,12 +11,14 @@ import checkJwt from '@/middleware/authMiddleware.js';
 import imageUploadHandler from '@/middleware/imageUploadHandler.js';
 import { validateLocal } from '@/validators/localValidators.js';
 import handleValidationErrors from '@/middleware/handleValidationErrors.js';
+import advancedResults from '@/middleware/advancedResults.js';
+import Local from '@/models/local.js';
 
 const router = express.Router();
 
 router.route('/')
-    .post(checkJwt, imageUploadHandler, validateLocal, handleValidationErrors, createLocal)
-    .get(getAllLocais);
+    .get(advancedResults(Local, 'eventos'), getAllLocais)
+    .post(checkJwt, imageUploadHandler, validateLocal, handleValidationErrors, createLocal);
 
 router.route('/:id')
     .get(getLocalById)
