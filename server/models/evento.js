@@ -65,6 +65,10 @@ const eventoSchema = new mongoose.Schema({
         lat: { type: Number },
         lng: { type: Number }
     },
+    tiposBilhete: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'TipoBilhete'
+    }],
     criadoPor: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Usuario',

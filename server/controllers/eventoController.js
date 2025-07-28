@@ -1,4 +1,5 @@
 import Evento from '@/models/evento.js';
+import TipoBilhete from '@/models/tipoBilhete.js';
 import asyncHandler from 'express-async-handler';
 import ErrorResponse from '@/utils/errorResponse.js';
 
@@ -40,7 +41,7 @@ const addImagesToEvento = asyncHandler(async (req, res, next) => {
 // @route   GET /api/v1/eventos
 // @access  Público
 const getAllEventos = asyncHandler(async (req, res, next) => {
-    const eventos = await Evento.find({});
+    const eventos = await Evento.find({}).populate('tiposBilhete');
     res.success({
         count: eventos.length,
         data: eventos
@@ -51,7 +52,7 @@ const getAllEventos = asyncHandler(async (req, res, next) => {
 // @route   GET /api/v1/eventos/:id
 // @access  Público
 const getEventoById = asyncHandler(async (req, res, next) => {
-    const evento = await Evento.findById(req.params.id);
+    const evento = await Evento.findById(req.params.id).populate('tiposBilhete');
     if (!evento) {
         return next(new ErrorResponse(`Evento não encontrado com o id ${req.params.id}`, 404));
     }
@@ -82,10 +83,16 @@ const updateEvento = asyncHandler(async (req, res, next) => {
 // @route   DELETE /api/v1/eventos/:id
 // @access  Privado
 const deleteEvento = asyncHandler(async (req, res, next) => {
-    const evento = await Evento.findByIdAndDelete(req.params.id);
+    const evento = await Evento.findById(req.params.id);
     if (!evento) {
         return next(new ErrorResponse(`Evento não encontrado com o id ${req.params.id}`, 404));
     }
+
+    // Antes de deletar o evento, deleta os tipos de bilhete associados
+    await TipoBilhete.deleteMany({ id_evento: req.params.id });
+    
+    await evento.deleteOne();
+
     res.success({});
 });
 
@@ -95,16 +102,40 @@ const deleteEvento = asyncHandler(async (req, res, next) => {
 // @route   POST /api/v1/eventos/:eventoId/tipos-bilhete
 // @access  Privado
 const createTipoBilheteForEvento = asyncHandler(async (req, res, next) => {
-    // TODO: Implementar a lógica para criar um tipo de bilhete para um evento
-    res.success({ message: 'Rota para criar tipo de bilhete para um evento' }, 201);
+    const { eventoId } = req.params;
+    req.body.id_evento = eventoId;
+
+    const evento = await Evento.findById(eventoId);
+    if (!evento) {
+        return next(new ErrorResponse(`Evento não encontrado com o id ${eventoId}`, 404));
+    }
+
+    const tipoBilhete = await TipoBilhete.create(req.body);
+
+    // Adiciona o novo tipo de bilhete ao evento
+    evento.tiposBilhete.push(tipoBilhete._id);
+    await evento.save();
+
+    res.success(tipoBilhete, 201);
 });
 
 // @desc    Retorna todos os tipos de bilhete de um evento
 // @route   GET /api/v1/eventos/:eventoId/tipos-bilhete
 // @access  Público
 const getAllTiposBilheteFromEvento = asyncHandler(async (req, res, next) => {
-    // TODO: Implementar a lógica para retornar todos os tipos de bilhete de um evento
-    res.success({ message: 'Rota para retornar todos os tipos de bilhete de um evento' });
+    const { eventoId } = req.params;
+
+    const evento = await Evento.findById(eventoId);
+    if (!evento) {
+        return next(new ErrorResponse(`Evento não encontrado com o id ${eventoId}`, 404));
+    }
+
+    const tiposBilhete = await TipoBilhete.find({ id_evento: eventoId });
+
+    res.success({
+        count: tiposBilhete.length,
+        data: tiposBilhete
+    });
 });
 
 export {

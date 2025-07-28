@@ -13,6 +13,7 @@ import {
 import checkJwt from '@/middleware/authMiddleware.js';
 import imageUploadHandler from '@/middleware/imageUploadHandler.js';
 import { validateEvento } from '@/validators/eventoValidators.js';
+import { validateTipoBilhete } from '@/validators/tipoBilheteValidators.js';
 import handleValidationErrors from '@/middleware/handleValidationErrors.js';
 
 const router = express.Router();
@@ -32,7 +33,7 @@ router.route('/:id/images')
 // --- ROTAS ANINHADAS PARA TIPOS DE BILHETE ---
 // Endpoint: /api/v1/eventos/:eventoId/tipos-bilhete
 router.route('/:eventoId/tipos-bilhete')
-    .post(checkJwt, createTipoBilheteForEvento) // TODO: Add validation for tipoBilhete
+    .post(checkJwt, validateTipoBilhete, handleValidationErrors, createTipoBilheteForEvento)
     .get(getAllTiposBilheteFromEvento);
 
 export default router;
