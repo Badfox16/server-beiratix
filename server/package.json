@@ -4,29 +4,36 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "start": "bun server.js",
-    "dev": "nodemon server.js",
+    "start": "bun index",
+    "dev": "nodemon index",
     "seed": "bun seeder.js",
     "seed:destroy": "bun seeder.js -d"
   },
   "devDependencies": {
-    "@types/bun": "latest"
+    "@types/bun": "latest",
+    "@types/morgan": "^1.9.10"
   },
   "peerDependencies": {
     "typescript": "^5"
   },
   "dependencies": {
     "@faker-js/faker": "^9.9.0",
+    "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
     "bcryptjs": "^3.0.2",
     "cloudinary": "^2.7.0",
+    "cors": "^2.8.5",
     "dotenv": "^17.2.0",
     "express": "^5.1.0",
+    "express-async-handler": "^1.2.0",
     "express-oauth2-jwt-bearer": "^1.6.1",
     "express-validator": "^7.2.1",
     "mongodb": "^6.17.0",
     "mongoose": "^8.16.2",
+    "morgan": "^1.10.1",
+    "multer": "^2.0.2",
     "nodemon": "^3.1.10",
-    "qrcode": "^1.5.4"
+    "qrcode": "^1.5.4",
+    "streamifier": "^0.1.1"
   }
 }

@@ -6,9 +6,14 @@ import { connectToDatabase } from '@/config/db.js';
 import responseHandler from '@/middleware/responseHandler.js';
 import errorHandler from '@/middleware/errorHandler.js';
 
+import { configureCORS, configureLogging, configureBasicMiddleware } from '@/middleware/basicConfig'
+
 dotenv.config();
 
 const app = express();
+// Configurar CORS e logging
+app.use(configureCORS())
+app.use(configureLogging())
 
 // Importar as rotas
 import categoriaRoutes from '@/routes/categoriaRoutes.js';

@@ -1,27 +1,30 @@
-import { connectToDatabase } from './config/db';
 
-const mongoose = require('mongoose');
-const dotenv = require('dotenv');
-const { faker } = require('@faker-js/faker');
+import mongoose from 'mongoose';
+import dotenv from 'dotenv';
+import { faker } from '@faker-js/faker';
+import { connectToDatabase } from './config/db.js';
 
-// Carregar as variáveis de ambiente do ficheiro .env
-dotenv.config();
+// Carregar as variáveis de ambiente
+dotenv.config({ path: './.env' });
 
-// Importar os modelos Mongoose
-const Categoria = require('./models/categoria').default;
-const Usuario = require('./models/usuario');
-const Organizador = require('./models/organizador').default;
-const Local = require('./models/local').default;
-const Evento = require('./models/evento');
-const Bilhete = require('./models/bilhete');
-const Pagamento = require('./models/pagamento').default;
+// Importar os modelos
+import Categoria from './models/categoria.js';
+import Usuario from './models/usuario.js';
+import Organizador from './models/organizador.js';
+import Local from './models/local.js';
+import Evento from './models/evento.js';
+import TipoBilhete from './models/tipoBilhete.js';
+import Pagamento from './models/pagamento.js';
+import Bilhete from './models/bilhete.js';
+
 
 // --- FUNÇÃO PARA DESTRUIR DADOS ---
 const destroyData = async () => {
     try {
-        // Apaga em ordem para evitar problemas de referência, embora não seja estritamente necessário para apagar
-        await Pagamento.deleteMany();
+        // A ordem é importante para evitar erros de referência
         await Bilhete.deleteMany();
+        await Pagamento.deleteMany();
+        await TipoBilhete.deleteMany();
         await Evento.deleteMany();
         await Local.deleteMany();
         await Categoria.deleteMany();
@@ -42,11 +45,11 @@ const importData = async () => {
 
         // 1. Criar Categorias
         const categorias = await Categoria.insertMany([
-            { nome: 'Música', descricao: 'Eventos musicais, concertos e festivais.', tipo: 'evento' },
-            { nome: 'Conferência', descricao: 'Palestras, workshops e conferências profissionais.', tipo: 'evento' },
-            { nome: 'Desporto', descricao: 'Jogos, competições e eventos desportivos.', tipo: 'evento' },
-            { nome: 'Sala de Concertos', descricao: 'Espaços para música ao vivo.', tipo: 'local' },
-            { nome: 'Centro de Convenções', descricao: 'Grandes espaços para feiras e conferências.', tipo: 'local' },
+            { nome: 'Música', icon: 'music' },
+            { nome: 'Conferência', icon: 'briefcase' },
+            { nome: 'Desporto', icon: 'football' },
+            { nome: 'Teatro & Cultura', icon: 'masks-theater' },
+            { nome: 'Comida & Bebida', icon: 'utensils' },
         ]);
         console.log('Categorias criadas.');
 
@@ -56,8 +59,9 @@ const importData = async () => {
             usuarios.push({
                 nome: faker.person.fullName(),
                 email: faker.internet.email().toLowerCase(),
-                senha: 'senha123', // Lembre-se da recomendação de usar bcrypt! O seeder usa texto simples para simplicidade.
+                auth0Id: `auth0|${faker.string.uuid()}`,
                 telefone: faker.phone.number(),
+                role: i === 0 ? 'admin' : 'utilizador', // O primeiro user é admin
             });
         }
         const usuariosCriados = await Usuario.insertMany(usuarios);
@@ -77,84 +81,108 @@ const importData = async () => {
         const organizadoresCriados = await Organizador.insertMany(organizadores);
         console.log('Organizadores criados.');
 
-        // 4. Criar Locais (usando IDs de categorias de 'local')
-        const categoriaLocal = categorias.find(c => c.tipo === 'local' || c.tipo === 'ambos');
+        // 4. Criar Locais
         const locais = [];
         for (let i = 0; i < 5; i++) {
             locais.push({
-                nome: `${faker.company.name()} Hall`,
-                descricao: faker.lorem.sentence(),
+                nome: `${faker.company.name()} Arena`,
+                descricao: faker.lorem.sentence({ min: 20, max: 40 }),
                 endereco: faker.location.streetAddress({ useFullAddress: true }),
-                categoria: categoriaLocal._id,
+                tipo: faker.helpers.arrayElement(['Estádio', 'Sala de Concertos', 'Centro de Convenções', 'Teatro']),
                 capacidade: faker.number.int({ min: 100, max: 5000 }),
-                imagemUrl: faker.image.urlLoremFlickr({ category: 'city' }),
+                imagens: [faker.image.urlLoremFlickr({ category: 'city' })],
             });
         }
         const locaisCriados = await Local.insertMany(locais);
         console.log('Locais criados.');
 
-        // 5. Criar Eventos
-        const categoriaEvento = categorias.find(c => c.tipo === 'evento' || c.tipo === 'ambos');
+        // 5. Criar Eventos e Tipos de Bilhete associados
         const eventos = [];
         for (let i = 0; i < 10; i++) {
-            const dataEvento = faker.date.future({ years: 1 });
-            eventos.push({
-                titulo: faker.music.songName(),
-                descricao: faker.lorem.paragraph(),
-                id_local: locaisCriados[i % locaisCriados.length]._id,
-                data: dataEvento,
-                horaInicio: '19:00',
-                horaFim: '23:00',
-                categoria: categoriaEvento._id,
-                imageUrl: faker.image.urlLoremFlickr({ category: 'music' }),
-                criadoPor: usuariosCriados[i % usuariosCriados.length]._id,
-            });
-        }
-        const eventosCriados = await Evento.insertMany(eventos);
-        console.log('Eventos criados.');
+            const dataInicio = faker.date.future({ years: 1 });
+            const dataFim = new Date(dataInicio.getTime() + faker.number.int({ min: 2, max: 8 }) * 60 * 60 * 1000); // Adiciona entre 2 a 8 horas
 
-        // 6. Criar Bilhetes para cada Evento
-        let bilhetes = [];
-        for (const evento of eventosCriados) {
-            bilhetes.push({
-                id_evento: evento._id,
-                tipo: 'Normal',
-                preco: faker.number.int({ min: 250, max: 1000 }),
-                quantidadeDisponivel: faker.number.int({ min: 50, max: 200 }),
-                descricao: 'Acesso geral ao evento.',
+            const evento = new Evento({
+                titulo: faker.lorem.words({ min: 3, max: 6 }),
+                descricao: faker.lorem.paragraph({ min: 3, max: 5 }),
+                id_organizador: organizadoresCriados[i % organizadoresCriados.length]._id,
+                id_local: locaisCriados[i % locaisCriados.length]._id,
+                dataInicio,
+                dataFim,
+                categoria: categorias[i % categorias.length]._id,
+                images: [faker.image.urlLoremFlickr({ category: 'party' })],
+                featured: faker.datatype.boolean(0.3), // 30% de chance de ser featured
+                criadoPor: usuariosCriados[0]._id, // Admin cria todos os eventos
+                mapCoordinates: {
+                    lat: faker.location.latitude(),
+                    lng: faker.location.longitude(),
+                }
             });
-            bilhetes.push({
-                id_evento: evento._id,
-                tipo: 'VIP',
-                preco: faker.number.int({ min: 1500, max: 5000 }),
-                quantidadeDisponivel: faker.number.int({ min: 10, max: 50 }),
-                descricao: 'Acesso à área VIP, com bebida de boas-vindas.',
-            });
+
+            // 6. Criar Tipos de Bilhete para este Evento
+            const tiposBilheteParaEvento = await TipoBilhete.insertMany([
+                {
+                    id_evento: evento._id,
+                    nome: 'Normal',
+                    descricao: 'Acesso geral ao evento.',
+                    preco: faker.number.int({ min: 250, max: 1000 }),
+                    quantidadeTotal: faker.number.int({ min: 100, max: 300 }),
+                },
+                {
+                    id_evento: evento._id,
+                    nome: 'VIP',
+                    descricao: 'Acesso à área VIP com benefícios exclusivos.',
+                    preco: faker.number.int({ min: 1500, max: 5000 }),
+                    quantidadeTotal: faker.number.int({ min: 20, max: 80 }),
+                }
+            ]);
+            console.log(`Tipos de bilhete criados para o evento: ${evento.titulo}`);
+
+            // Associar os IDs dos tipos de bilhete ao evento
+            evento.tiposBilhete = tiposBilheteParaEvento.map(tb => tb._id);
+            eventos.push(evento);
         }
-        const bilhetesCriados = await Bilhete.insertMany(bilhetes);
-        console.log('Bilhetes criados.');
-        
-        // 7. Simular alguns Pagamentos (opcional)
-        const pagamentos = [];
-        for(let i=0; i<5; i++){
-            const bilheteAleatorio = bilhetesCriados[faker.number.int({min: 0, max: bilhetesCriados.length - 1})];
-            const utilizadorAleatorio = usuariosCriados[faker.number.int({min: 0, max: usuariosCriados.length - 1})];
+        const eventosCriados = await Evento.bulkSave(eventos); // Usar bulkSave para salvar os eventos já com os IDs dos bilhetes
+        console.log('Eventos criados e associados aos tipos de bilhete.');
+
+        // 7. Simular Pagamentos e criar Bilhetes
+        for(let i = 0; i < 15; i++) {
+            const eventoAleatorio = faker.helpers.arrayElement(eventos);
+            const tipoBilheteAleatorio = await TipoBilhete.findById(faker.helpers.arrayElement(eventoAleatorio.tiposBilhete));
+            const utilizadorAleatorio = faker.helpers.arrayElement(usuariosCriados);
             const quantidade = faker.number.int({ min: 1, max: 4 });
 
-            pagamentos.push({
+            // Simular um pagamento
+            const pagamento = await Pagamento.create({
                 id_usuario: utilizadorAleatorio._id,
-                id_bilhete: bilheteAleatorio._id,
-                id_evento: bilheteAleatorio.id_evento,
-                valorTotal: bilheteAleatorio.preco * quantidade,
+                id_tipoBilhete: tipoBilheteAleatorio._id,
+                id_evento: eventoAleatorio._id,
+                valorTotal: tipoBilheteAleatorio.preco * quantidade,
                 estado: 'concluído',
-                metodoPagamento: 'M-Pesa',
+                metodoPagamento: faker.helpers.arrayElement(['M-Pesa', 'Cartão de Crédito', 'Transferência']),
                 transacaoId: faker.string.alphanumeric(12).toUpperCase(),
                 quantidadeBilhetes: quantidade,
             });
-        }
-        await Pagamento.insertMany(pagamentos);
-        console.log('Pagamentos de simulação criados.');
 
+            // Criar os bilhetes individuais para esse pagamento
+            const bilhetesParaPagamento = [];
+            for (let j = 0; j < quantidade; j++) {
+                bilhetesParaPagamento.push({
+                    id_evento: eventoAleatorio._id,
+                    id_pagamento: pagamento._id,
+                    id_usuario: utilizadorAleatorio._id,
+                    tipo: tipoBilheteAleatorio.nome,
+                    preco: tipoBilheteAleatorio.preco,
+                });
+            }
+            await Bilhete.insertMany(bilhetesParaPagamento);
+
+            // Atualizar a contagem de bilhetes vendidos
+            await TipoBilhete.findByIdAndUpdate(tipoBilheteAleatorio._id, {
+                $inc: { quantidadeVendida: quantidade }
+            });
+        }
+        console.log('Pagamentos e Bilhetes de simulação criados.');
 
         console.log('Importação de dados concluída com sucesso!');
 
@@ -168,9 +196,9 @@ const importData = async () => {
 const run = async () => {
     await connectToDatabase();
 
-    if (process.argv[2] === '-d') { // Se o argumento for '-d', destrói os dados
+    if (process.argv[2] === '-d') {
         await destroyData();
-    } else { // Caso contrário, importa os dados
+    } else {
         await importData();
     }
 
