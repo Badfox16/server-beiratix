@@ -95,4 +95,20 @@ eventoSchema.virtual('bilhetes', {
     foreignField: 'id_evento'
 });
 
+// Relação virtual com Avaliações
+eventoSchema.virtual('avaliacoes', {
+    ref: 'Avaliacao',
+    localField: '_id',
+    foreignField: 'id_evento'
+});
+
+// Relação virtual com Comentários
+eventoSchema.virtual('comentarios', {
+    ref: 'Comentario',
+    localField: '_id',
+    foreignField: 'id_evento',
+    justOne: false
+});
+
+
 export default mongoose.model('Evento', eventoSchema);

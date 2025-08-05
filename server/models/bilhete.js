@@ -32,6 +32,10 @@ const bilheteSchema = new mongoose.Schema({
         unique: true,
         required: true,
     },
+    qrCode: {
+        type: String, // Armazenará o QR code como uma string Base64 (Data URL)
+        required: true,
+    },
     estado: {
         type: String,
         enum: ['válido', 'utilizado', 'cancelado'],
@@ -39,15 +43,6 @@ const bilheteSchema = new mongoose.Schema({
     }
 }, {
     timestamps: true
-});
-
-// Hook para gerar o código único antes de salvar
-bilheteSchema.pre('validate', function(next) {
-    if (this.isNew) {
-        // Gera um código mais curto e legível
-        this.codigoUnico = randomBytes(4).toString('hex').toUpperCase();
-    }
-    next();
 });
 
 export default mongoose.model('Bilhete', bilheteSchema);

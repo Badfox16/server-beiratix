@@ -22,6 +22,7 @@ import localRoutes from '@/routes/localRoutes.js';
 import organizadorRoutes from '@/routes/organizadorRoutes.js';
 import pagamentoRoutes from '@/routes/pagamentoRoutes.js';
 import usuarioRoutes from '@/routes/usuarioRoutes.js';
+import bilheteRoutes from '@/routes/bilheteRoutes.js';
 
 // --- MIDDLEWARES GLOBAIS ---
 
@@ -39,6 +40,7 @@ app.use('/api/v1/locais', localRoutes);
 app.use('/api/v1/organizadores', organizadorRoutes);
 app.use('/api/v1/pagamentos', pagamentoRoutes);
 app.use('/api/v1/usuarios', usuarioRoutes);
+app.use('/api/v1/bilhetes', bilheteRoutes);
 
 app.get('/', (req, res) => {
   res.json({ success: true, message: 'Bem-vindo à API do BeiraTix!' });

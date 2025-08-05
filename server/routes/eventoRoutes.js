@@ -18,7 +18,18 @@ import handleValidationErrors from '@/middleware/handleValidationErrors.js';
 import advancedResults from '@/middleware/advancedResults.js';
 import Evento from '@/models/evento.js';
 
+// Importar os routers dos recursos aninhados
+import avaliacaoRouter from './avaliacaoRoutes.js';
+import comentarioRouter from './comentarioRoutes.js';
+
+
 const router = express.Router();
+
+// --- ROTAS ANINHADAS ---
+// Redireciona o tráfego para os routers específicos
+router.use('/:eventoId/avaliacoes', avaliacaoRouter);
+router.use('/:eventoId/comentarios', comentarioRouter);
+
 
 router.route('/')
     .get(advancedResults(Evento, { path: 'tiposBilhete categoria', select: 'nome preco' }), getAllEventos)

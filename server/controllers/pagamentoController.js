@@ -1,10 +1,12 @@
 import asyncHandler from 'express-async-handler';
 import mongoose from 'mongoose';
+import qrcode from 'qrcode';
+import { randomBytes } from 'crypto';
 import ErrorResponse from '@/utils/errorResponse.js';
 import Pagamento from '@/models/pagamento.js';
 import TipoBilhete from '@/models/tipoBilhete.js';
 import Bilhete from '@/models/bilhete.js';
-import Usuario from '@/models/usuario.js'; // Adicionado para verificar o utilizador
+import Usuario from '@/models/usuario.js';
 
 // @desc    Processa a compra de um ou mais bilhetes
 // @route   POST /api/v1/pagamentos/comprar
@@ -59,19 +61,24 @@ const processarCompraBilhete = asyncHandler(async (req, res, next) => {
         }], { session }))[0];
 
         // 4. Atualizar o stock do tipo de bilhete
-        const updatedTipoBilhete = await TipoBilhete.findByIdAndUpdate(id_tipoBilhete, {
+        await TipoBilhete.findByIdAndUpdate(id_tipoBilhete, {
             $inc: { quantidadeVendida: quantidade }
         }, { new: true, session });
 
-        // 5. Criar os bilhetes individuais
+        // 5. Criar os bilhetes individuais com QR Code
         const bilhetesParaCriar = [];
         for (let i = 0; i < quantidade; i++) {
+            const codigoUnico = randomBytes(4).toString('hex').toUpperCase();
+            const qrCodeDataURL = await qrcode.toDataURL(codigoUnico);
+
             bilhetesParaCriar.push({
                 id_evento: tipoBilhete.id_evento,
                 id_pagamento: pagamento._id,
                 id_usuario,
                 tipo: tipoBilhete.nome,
-                preco: tipoBilhete.preco
+                preco: tipoBilhete.preco,
+                codigoUnico,
+                qrCode: qrCodeDataURL
             });
         }
         const bilhetesCriados = await Bilhete.insertMany(bilhetesParaCriar, { session });
@@ -87,7 +94,6 @@ const processarCompraBilhete = asyncHandler(async (req, res, next) => {
     } catch (error) {
         await session.abortTransaction();
         session.endSession();
-        // Adicionar log do erro para depuração
         console.error('Erro na transação de compra:', error);
         next(new ErrorResponse('A transação falhou. Tente novamente.', 500));
     }
