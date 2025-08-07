@@ -14,7 +14,7 @@ const createCategoria = asyncHandler(async (req, res, next) => {
 // @route   GET /api/v1/categorias
 // @access  Público
 const getAllCategorias = asyncHandler(async (req, res, next) => {
-    res.success(res.advancedResults);
+    res.json(res.advancedResults);
 });
 
 // @desc    Retorna uma categoria específica

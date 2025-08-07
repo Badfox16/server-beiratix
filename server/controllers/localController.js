@@ -40,7 +40,7 @@ const addImagesToLocal = asyncHandler(async (req, res, next) => {
 // @route   GET /api/v1/locais
 // @access  Público
 const getAllLocais = asyncHandler(async (req, res, next) => {
-    res.success(res.advancedResults);
+    res.json(res.advancedResults);
 });
 
 // @desc    Retorna um local específico

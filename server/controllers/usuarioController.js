@@ -6,21 +6,10 @@ import ErrorResponse from '@/utils/errorResponse.js';
 // @route   GET /api/v1/usuarios/me
 // @access  Privado
 const getCurrentUser = asyncHandler(async (req, res, next) => {
-    console.log('🎯 [getCurrentUser] Controller iniciado');
-    console.log('👤 [getCurrentUser] req.user existe?', !!req.user);
-    console.log('🔍 [getCurrentUser] req.user:', req.user ? {
-        id: req.user._id,
-        nome: req.user.nome,
-        email: req.user.email,
-        role: req.user.role
-    } : 'undefined');
-    
     if (!req.user) {
-        console.log('❌ [getCurrentUser] Usuário não encontrado no req.user');
         return next(new ErrorResponse('Usuário não encontrado', 404));
     }
     
-    console.log('✅ [getCurrentUser] Retornando usuário via res.success');
     res.success(req.user);
 });
 
@@ -63,7 +52,7 @@ const createUsuario = asyncHandler(async (req, res, next) => {
 // @route   GET /api/v1/usuarios
 // @access  Privado (Admin)
 const getAllUsuarios = asyncHandler(async (req, res, next) => {
-    res.success(res.advancedResults);
+    res.json(res.advancedResults);
 });
 
 // @desc    Retorna um usuário específico

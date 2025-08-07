@@ -52,7 +52,12 @@ const advancedResults = (model, populate) => async (req, res, next) => {
     const results = await query;
 
     // Constrói o objeto de paginação para a resposta
-    const pagination = {};
+    const pagination = {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit)
+    };
 
     if (endIndex < total) {
         pagination.next = {
