@@ -11,6 +11,7 @@ import {
     getAllTiposBilheteFromEvento
 } from '@/controllers/eventoController.js';
 import checkJwt from '@/middleware/authMiddleware.js';
+import syncUser from '@/middleware/syncUser.js';
 import imageUploadHandler from '@/middleware/imageUploadHandler.js';
 import { validateEvento } from '@/validators/eventoValidators.js';
 import { validateTipoBilhete } from '@/validators/tipoBilheteValidators.js';
@@ -33,20 +34,20 @@ router.use('/:eventoId/comentarios', comentarioRouter);
 
 router.route('/')
     .get(advancedResults(Evento, { path: 'tiposBilhete categoria', select: 'nome preco' }), getAllEventos)
-    .post(checkJwt, imageUploadHandler, validateEvento, handleValidationErrors, createEvento);
+    .post(checkJwt, syncUser, imageUploadHandler, validateEvento, handleValidationErrors, createEvento);
 
 router.route('/:id')
     .get(getEventoById)
-    .put(checkJwt, imageUploadHandler, validateEvento, handleValidationErrors, updateEvento)
-    .delete(checkJwt, deleteEvento);
+    .put(checkJwt, syncUser, imageUploadHandler, validateEvento, handleValidationErrors, updateEvento)
+    .delete(checkJwt, syncUser, deleteEvento);
 
 router.route('/:id/images')
-    .post(checkJwt, imageUploadHandler, handleValidationErrors, addImagesToEvento);
+    .post(checkJwt, syncUser, imageUploadHandler, handleValidationErrors, addImagesToEvento);
 
 // --- ROTAS ANINHADAS PARA TIPOS DE BILHETE ---
 // Endpoint: /api/v1/eventos/:eventoId/tipos-bilhete
 router.route('/:eventoId/tipos-bilhete')
-    .post(checkJwt, validateTipoBilhete, handleValidationErrors, createTipoBilheteForEvento)
+    .post(checkJwt, syncUser, validateTipoBilhete, handleValidationErrors, createTipoBilheteForEvento)
     .get(getAllTiposBilheteFromEvento);
 
 export default router;

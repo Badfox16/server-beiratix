@@ -1,3 +1,5 @@
+import multer from 'multer';
+
 const errorHandler = (err, req, res, next) => {
   console.error(err.stack); // Para debugging no servidor
 

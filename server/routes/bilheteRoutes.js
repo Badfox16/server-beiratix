@@ -5,12 +5,14 @@ import {
     validarBilhete
 } from '@/controllers/bilheteController.js';
 import checkJwt from '@/middleware/authMiddleware.js';
+import syncUser from '@/middleware/syncUser.js';
 import { authorize } from '@/middleware/authorize.js';
 
 const router = express.Router();
 
 // Todas as rotas aqui são privadas e requerem autenticação
 router.use(checkJwt);
+router.use(syncUser); // Sincroniza usuário do Auth0 com MongoDB
 
 // Rota para validar um bilhete (acessível por admin e organizador)
 router.route('/validar')
