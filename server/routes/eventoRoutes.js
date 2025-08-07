@@ -8,7 +8,10 @@ import {
     deleteEvento,
     // --- Funções para recursos aninhados ---
     createTipoBilheteForEvento,
-    getAllTiposBilheteFromEvento
+    getAllTiposBilheteFromEvento,
+    getTipoBilheteFromEvento,
+    updateTipoBilheteFromEvento,
+    deleteTipoBilheteFromEvento
 } from '@/controllers/eventoController.js';
 import checkJwt from '@/middleware/authMiddleware.js';
 import imageUploadHandler from '@/middleware/imageUploadHandler.js';
@@ -48,5 +51,11 @@ router.route('/:id/images')
 router.route('/:eventoId/tipos-bilhete')
     .post(checkJwt, validateTipoBilhete, handleValidationErrors, createTipoBilheteForEvento)
     .get(getAllTiposBilheteFromEvento);
+
+// Endpoint: /api/v1/eventos/:eventoId/tipos-bilhete/:tipoBilheteId
+router.route('/:eventoId/tipos-bilhete/:tipoBilheteId')
+    .get(getTipoBilheteFromEvento)
+    .put(checkJwt, validateTipoBilhete, handleValidationErrors, updateTipoBilheteFromEvento)
+    .delete(checkJwt, deleteTipoBilheteFromEvento);
 
 export default router;

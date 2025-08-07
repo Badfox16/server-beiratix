@@ -140,6 +140,83 @@ const getAllTiposBilheteFromEvento = asyncHandler(async (req, res, next) => {
     });
 });
 
+// @desc    Retorna um tipo de bilhete específico de um evento
+// @route   GET /api/v1/eventos/:eventoId/tipos-bilhete/:tipoBilheteId
+// @access  Público
+const getTipoBilheteFromEvento = asyncHandler(async (req, res, next) => {
+    const { eventoId, tipoBilheteId } = req.params;
+
+    const evento = await Evento.findById(eventoId);
+    if (!evento) {
+        return next(new ErrorResponse(`Evento não encontrado com o id ${eventoId}`, 404));
+    }
+
+    const tipoBilhete = await TipoBilhete.findOne({ 
+        _id: tipoBilheteId, 
+        id_evento: eventoId 
+    });
+
+    if (!tipoBilhete) {
+        return next(new ErrorResponse(`Tipo de bilhete não encontrado com o id ${tipoBilheteId}`, 404));
+    }
+
+    res.success(tipoBilhete);
+});
+
+// @desc    Atualiza um tipo de bilhete específico de um evento
+// @route   PUT /api/v1/eventos/:eventoId/tipos-bilhete/:tipoBilheteId
+// @access  Privado
+const updateTipoBilheteFromEvento = asyncHandler(async (req, res, next) => {
+    const { eventoId, tipoBilheteId } = req.params;
+
+    const evento = await Evento.findById(eventoId);
+    if (!evento) {
+        return next(new ErrorResponse(`Evento não encontrado com o id ${eventoId}`, 404));
+    }
+
+    const tipoBilhete = await TipoBilhete.findOneAndUpdate(
+        { _id: tipoBilheteId, id_evento: eventoId },
+        req.body,
+        { new: true, runValidators: true }
+    );
+
+    if (!tipoBilhete) {
+        return next(new ErrorResponse(`Tipo de bilhete não encontrado com o id ${tipoBilheteId}`, 404));
+    }
+
+    res.success(tipoBilhete);
+});
+
+// @desc    Remove um tipo de bilhete específico de um evento
+// @route   DELETE /api/v1/eventos/:eventoId/tipos-bilhete/:tipoBilheteId
+// @access  Privado
+const deleteTipoBilheteFromEvento = asyncHandler(async (req, res, next) => {
+    const { eventoId, tipoBilheteId } = req.params;
+
+    const evento = await Evento.findById(eventoId);
+    if (!evento) {
+        return next(new ErrorResponse(`Evento não encontrado com o id ${eventoId}`, 404));
+    }
+
+    const tipoBilhete = await TipoBilhete.findOne({ 
+        _id: tipoBilheteId, 
+        id_evento: eventoId 
+    });
+
+    if (!tipoBilhete) {
+        return next(new ErrorResponse(`Tipo de bilhete não encontrado com o id ${tipoBilheteId}`, 404));
+    }
+
+    // Remove o tipo de bilhete da lista do evento
+    evento.tiposBilhete.pull(tipoBilheteId);
+    await evento.save();
+
+    // Remove o tipo de bilhete
+    await tipoBilhete.deleteOne();
+
+    res.success({});
+});
+
 export {
     createEvento,
     addImagesToEvento,
@@ -148,6 +225,9 @@ export {
     updateEvento,
     deleteEvento,
     createTipoBilheteForEvento,
-    getAllTiposBilheteFromEvento
+    getAllTiposBilheteFromEvento,
+    getTipoBilheteFromEvento,
+    updateTipoBilheteFromEvento,
+    deleteTipoBilheteFromEvento
 };
 
