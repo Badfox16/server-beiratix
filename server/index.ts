@@ -5,7 +5,6 @@ import { connectToDatabase } from '@/config/db.js';
 // Importar os nossos middlewares
 import responseHandler from '@/middleware/responseHandler.js';
 import errorHandler from '@/middleware/errorHandler.js';
-import syncUser from '@/middleware/syncUser.js';
 
 import { configureCORS, configureLogging, configureBasicMiddleware } from '@/middleware/basicConfig'
 

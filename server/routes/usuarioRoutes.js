@@ -4,7 +4,6 @@ import {
     updateCurrentUser,
     createUsuario,
     getAllUsuarios,
-    getUserStats,
     getUsuarioById,
     updateUsuario,
     deleteUsuario
@@ -23,11 +22,6 @@ const router = express.Router();
 router.route('/me')
     .get(checkJwt, syncUser, getCurrentUser)
     .put(checkJwt, syncUser, updateCurrentUser);
-
-// @desc    Estatísticas dos usuários
-// @route   GET /api/v1/usuarios/stats
-router.route('/stats')
-    .get(checkJwt, syncUser, getUserStats);
 
 // @desc    Cria ou obtém todos os utilizadores
 // @route   POST, GET /api/v1/usuarios

@@ -47,8 +47,7 @@ const addImagesToEvento = asyncHandler(async (req, res, next) => {
 // @route   GET /api/v1/eventos
 // @access  Público
 const getAllEventos = asyncHandler(async (req, res, next) => {
-    // res.advancedResults já tem a estrutura correta
-    res.status(200).json(res.advancedResults);
+    res.success(res.advancedResults);
 });
 
 // @desc    Retorna um evento específico

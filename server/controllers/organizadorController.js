@@ -14,7 +14,7 @@ const createOrganizador = asyncHandler(async (req, res, next) => {
 // @route   GET /api/v1/organizadores
 // @access  Público
 const getAllOrganizadores = asyncHandler(async (req, res, next) => {
-    res.status(200).json(res.advancedResults);
+    res.success(res.advancedResults);
 });
 
 // @desc    Retorna um organizador específico

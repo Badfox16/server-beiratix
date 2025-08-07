@@ -1,5 +1,3 @@
-import multer from 'multer';
-
 const errorHandler = (err, req, res, next) => {
   console.error(err.stack); // Para debugging no servidor
 
@@ -26,12 +24,11 @@ const errorHandler = (err, req, res, next) => {
     message = `O campo '${field}' com o valor '${value}' já existe.`;
   }
   
-  // Tratar erros do Multer
-  if (err instanceof multer.MulterError) {
+  // Tratar erros do Multer (verificação mais segura)
+  if (err.code && (err.code === 'LIMIT_FILE_SIZE' || err.code === 'LIMIT_UNEXPECTED_FILE')) {
     statusCode = 400; // Bad Request
     message = `Erro no upload do ficheiro: ${err.message}`;
   }
-
 
   res.status(statusCode).json({
     success: false,

@@ -2,7 +2,7 @@
   "lockfileVersion": 1,
   "workspaces": {
     "": {
-      "name": "eitickets",
+      "name": "beiratix-server",
       "dependencies": {
         "@faker-js/faker": "^9.9.0",
         "@types/cors": "^2.8.19",

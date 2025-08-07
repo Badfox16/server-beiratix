@@ -6,9 +6,21 @@ import ErrorResponse from '@/utils/errorResponse.js';
 // @route   GET /api/v1/usuarios/me
 // @access  Privado
 const getCurrentUser = asyncHandler(async (req, res, next) => {
+    console.log('🎯 [getCurrentUser] Controller iniciado');
+    console.log('👤 [getCurrentUser] req.user existe?', !!req.user);
+    console.log('🔍 [getCurrentUser] req.user:', req.user ? {
+        id: req.user._id,
+        nome: req.user.nome,
+        email: req.user.email,
+        role: req.user.role
+    } : 'undefined');
+    
     if (!req.user) {
+        console.log('❌ [getCurrentUser] Usuário não encontrado no req.user');
         return next(new ErrorResponse('Usuário não encontrado', 404));
     }
+    
+    console.log('✅ [getCurrentUser] Retornando usuário via res.success');
     res.success(req.user);
 });
 
@@ -51,7 +63,7 @@ const createUsuario = asyncHandler(async (req, res, next) => {
 // @route   GET /api/v1/usuarios
 // @access  Privado (Admin)
 const getAllUsuarios = asyncHandler(async (req, res, next) => {
-    res.status(200).json(res.advancedResults);
+    res.success(res.advancedResults);
 });
 
 // @desc    Retorna um usuário específico
@@ -91,23 +103,6 @@ const deleteUsuario = asyncHandler(async (req, res, next) => {
     res.success({});
 });
 
-// @desc    Retorna estatísticas dos usuários
-// @route   GET /api/v1/usuarios/stats
-// @access  Privado (Admin)
-const getUserStats = asyncHandler(async (req, res, next) => {
-    const total = await Usuario.countDocuments();
-    const admins = await Usuario.countDocuments({ role: 'admin' });
-    const organizadores = await Usuario.countDocuments({ role: 'organizador' });
-    const utilizadores = await Usuario.countDocuments({ role: 'utilizador' });
-    
-    res.success({
-        total,
-        admins,
-        organizadores,
-        utilizadores
-    });
-});
-
 export {
     getCurrentUser,
     updateCurrentUser,
@@ -115,6 +110,5 @@ export {
     getAllUsuarios,
     getUsuarioById,
     updateUsuario,
-    deleteUsuario,
-    getUserStats
+    deleteUsuario
 };

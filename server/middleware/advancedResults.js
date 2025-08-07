@@ -71,8 +71,7 @@ const advancedResults = (model, populate) => async (req, res, next) => {
     // Anexa os resultados e a paginação ao objeto 'res'
     res.advancedResults = {
         success: true,
-        count: total, // Total de documentos no banco (com filtros aplicados)
-        currentPageCount: results.length, // Número de itens na página atual
+        count: results.length,
         pagination,
         data: results
     };
