@@ -23,5 +23,17 @@ export const validateOrganizador = [
     body('descricao')
         .optional({ checkFalsy: true })
         .trim()
+        .isString(),
+
+    body('avaliacao')
+        .optional({ checkFalsy: true })
+        .isFloat({ min: 0, max: 5 })
+        .withMessage('A avaliação deve ser um número entre 0 e 5.'),
+
+    body('imagemLogo')
+        .optional({ checkFalsy: true })
+        .trim()
         .isString()
+        .withMessage('A URL da imagem do logo deve ser uma string.')
+
 ];

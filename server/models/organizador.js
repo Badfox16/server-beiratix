@@ -30,6 +30,16 @@ const organizadorSchema = new Schema({
         type: String,
         trim: true
     },  
+        avaliacao: {
+        type: Number,
+        min: 0,
+        max: 5,
+        default: 0
+    },
+        imagemLogo: {
+        type: String,
+        default: ''
+    },
 }, {
     timestamps: true, // Adiciona `createdAt` e `updatedAt`
     toJSON: { virtuals: true },
