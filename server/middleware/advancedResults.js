@@ -1,11 +1,22 @@
-const advancedResults = (model, populate) => async (req, res, next) => {
+const advancedResults = (model, populate, searchFields = []) => async (req, res, next) => {
     let query;
 
     // Copia req.query para não modificar o original
     const reqQuery = { ...req.query };
 
     // Campos a serem excluídos da filtragem
-    const removeFields = ['select', 'sort', 'page', 'limit'];
+    const removeFields = ['select', 'sort', 'page', 'limit', 'search'];
+
+    // Processa a busca por texto antes de remover os campos especiais
+    let searchQuery = {};
+    if (req.query.search && searchFields.length > 0) {
+        const searchRegex = new RegExp(req.query.search, 'i'); // 'i' para case-insensitive
+        searchQuery = {
+            $or: searchFields.map(field => ({
+                [field]: searchRegex
+            }))
+        };
+    }
 
     // Remove os campos especiais do objeto de query
     removeFields.forEach(param => delete reqQuery[param]);
@@ -16,8 +27,14 @@ const advancedResults = (model, populate) => async (req, res, next) => {
     // Adiciona o '$' na frente dos operadores de comparação (gt, gte, etc.)
     queryStr = queryStr.replace(/\b(gt|gte|lt|lte|in)\b/g, match => `$${match}`);
 
+    // Combina os filtros normais com a busca por texto
+    const baseQuery = JSON.parse(queryStr);
+    const finalQuery = Object.keys(searchQuery).length > 0 
+        ? { ...baseQuery, ...searchQuery }
+        : baseQuery;
+
     // Constrói a query inicial com os filtros
-    query = model.find(JSON.parse(queryStr));
+    query = model.find(finalQuery);
 
     // 1. Select (Seleção de Campos)
     if (req.query.select) {
@@ -39,7 +56,7 @@ const advancedResults = (model, populate) => async (req, res, next) => {
     const limit = parseInt(req.query.limit, 10) || 25; // Limite padrão de 25
     const startIndex = (page - 1) * limit;
     const endIndex = page * limit;
-    const total = await model.countDocuments(JSON.parse(queryStr));
+    const total = await model.countDocuments(finalQuery);
 
     query = query.skip(startIndex).limit(limit);
 

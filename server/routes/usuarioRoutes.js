@@ -27,7 +27,7 @@ router.route('/me')
 // @route   POST, GET /api/v1/usuarios
 router.route('/')
     .post(checkJwt, validateCreateUsuario, handleValidationErrors, createUsuario)
-    .get(checkJwt, syncUser, advancedResults(Usuario), getAllUsuarios);
+    .get(checkJwt, syncUser, advancedResults(Usuario, null, ['nome', 'email']), getAllUsuarios);
 
 // @desc    Obtém, atualiza ou apaga um utilizador por ID
 // @route   GET, PUT, DELETE /api/v1/usuarios/:id

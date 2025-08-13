@@ -17,7 +17,7 @@ import Local from '@/models/local.js';
 const router = express.Router();
 
 router.route('/')
-    .get(advancedResults(Local, 'eventos'), getAllLocais)
+    .get(advancedResults(Local, 'eventos', ['nome', 'descricao', 'endereco', 'tipo']), getAllLocais)
     .post(checkJwt, imageUploadHandler, validateLocal, handleValidationErrors, createLocal);
 
 router.route('/:id')

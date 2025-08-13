@@ -15,7 +15,7 @@ import Organizador from '@/models/organizador.js';
 const router = express.Router();
 
 router.route('/')
-    .get(advancedResults(Organizador, 'eventosOrganizados'), getAllOrganizadores)
+    .get(advancedResults(Organizador, 'eventosOrganizados', ['nome', 'emailContato', 'descricao']), getAllOrganizadores)
     .post(checkJwt, validateOrganizador, handleValidationErrors, createOrganizador);
 
 router.route('/:id')

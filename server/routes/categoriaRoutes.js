@@ -15,7 +15,7 @@ import Categoria from '@/models/categoria.js';
 const router = express.Router();
 
 router.route('/')
-    .get(advancedResults(Categoria), getAllCategorias)
+    .get(advancedResults(Categoria, null, ['nome']), getAllCategorias)
     .post(checkJwt, validateCategoria, handleValidationErrors, createCategoria);
 
 router.route('/:id')
