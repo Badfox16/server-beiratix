@@ -3,9 +3,11 @@ import {
     processarCompraBilhete,
     createPagamento,
     getPagamentoById,
+    getHistoricoPagamentos,
     handlePagamentoWebhook
 } from '@/controllers/pagamentoController.js';
 import checkJwt from '@/middleware/authMiddleware.js';
+import syncUser from '@/middleware/syncUser.js';
 import { validateCompraBilhete, validatePagamento } from '@/validators/pagamentoValidators.js';
 import handleValidationErrors from '@/middleware/handleValidationErrors.js';
 
@@ -14,15 +16,23 @@ const router = express.Router();
 // Rota principal para a compra de bilhetes (valida, cria bilhetes, atualiza stock)
 router.post('/comprar',
     checkJwt,
+    syncUser,
     validateCompraBilhete,
     handleValidationErrors,
     processarCompraBilhete
 );
 
+// Rota para buscar histórico de pagamentos do usuário
+router.get('/historico',
+    checkJwt,
+    syncUser,
+    getHistoricoPagamentos
+);
+
 // Rota para iniciar um processo de pagamento para um tipo de bilhete
 // (Pode ser usada para cenários mais complexos que não a compra direta)
 router.route('/')
-    .post(checkJwt, validatePagamento, handleValidationErrors, createPagamento);
+    .post(checkJwt, syncUser, validatePagamento, handleValidationErrors, createPagamento);
 
 router.route('/:id')
     .get(checkJwt, getPagamentoById);

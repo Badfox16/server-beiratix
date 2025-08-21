@@ -15,16 +15,21 @@ const processarCompraBilhete = asyncHandler(async (req, res, next) => {
     const { id_tipoBilhete, quantidade, metodoPagamento } = req.body;
     const id_usuario_jwt = req.auth.sub; // Padrão do express-oauth2-jwt-bearer
 
-    if (!id_usuario_jwt) {
-        return next(new ErrorResponse('Utilizador não autenticado.', 401));
+    console.log('=== INICIAR PROCESSAR COMPRA BILHETE ===');
+    
+    // Verificar se o usuário foi sincronizado pelo middleware
+    if (!req.user) {
+        console.log('❌ Usuário não encontrado após syncUser middleware');
+        return next(new ErrorResponse('Utilizador não encontrado.', 401));
     }
-
-    // Encontrar o nosso utilizador interno através do ID do JWT
-    const utilizador = await Usuario.findOne({ auth0Id: id_usuario_jwt });
-    if (!utilizador) {
-        return next(new ErrorResponse('Utilizador não encontrado no sistema.', 404));
-    }
-    const id_usuario = utilizador._id;
+    
+    console.log('✅ Usuário autenticado:', {
+        id: req.user._id,
+        nome: req.user.nome,
+        email: req.user.email
+    });
+    
+    const id_usuario = req.user._id;
 
     const tipoBilhete = await TipoBilhete.findById(id_tipoBilhete);
 
@@ -112,6 +117,33 @@ const createPagamento = asyncHandler(async (req, res, next) => {
     res.success(pagamento, 201);
 });
 
+// @desc    Retorna o histórico de pagamentos do utilizador autenticado
+// @route   GET /api/v1/pagamentos/historico
+// @access  Privado
+const getHistoricoPagamentos = asyncHandler(async (req, res, next) => {
+    const id_usuario_jwt = req.auth.sub;
+
+    // Verificar se o usuário foi sincronizado pelo middleware
+    if (!req.user) {
+        return next(new ErrorResponse('Utilizador não encontrado.', 401));
+    }
+
+    const id_usuario = req.user._id;
+
+    const pagamentos = await Pagamento.find({ id_usuario })
+        .populate({
+            path: 'id_evento',
+            select: 'titulo dataInicio images descricao'
+        })
+        .populate({
+            path: 'id_tipoBilhete',
+            select: 'nome preco'
+        })
+        .sort({ createdAt: -1 });
+
+    res.success(pagamentos);
+});
+
 // @desc    Retorna um pagamento específico
 // @route   GET /api/v1/pagamentos/:id
 // @access  Privado
@@ -137,5 +169,6 @@ export {
     processarCompraBilhete,
     createPagamento,
     getPagamentoById,
+    getHistoricoPagamentos,
     handlePagamentoWebhook
 };
