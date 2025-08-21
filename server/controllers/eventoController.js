@@ -19,7 +19,14 @@ const createEvento = asyncHandler(async (req, res, next) => {
     }
 
     const evento = await Evento.create(req.body);
-    res.success(evento, 201);
+    
+    // Buscar o evento criado com os dados populados
+    const eventoPopulado = await Evento.findById(evento._id)
+        .populate('categoria')
+        .populate('id_local')
+        .populate('id_organizador');
+    
+    res.success(eventoPopulado, 201);
 });
 
 // @desc    Adiciona imagens a um evento existente
@@ -54,7 +61,11 @@ const getAllEventos = asyncHandler(async (req, res, next) => {
 // @route   GET /api/v1/eventos/:id
 // @access  Público
 const getEventoById = asyncHandler(async (req, res, next) => {
-    const evento = await Evento.findById(req.params.id).populate('tiposBilhete');
+    const evento = await Evento.findById(req.params.id)
+        .populate('tiposBilhete')
+        .populate('categoria')
+        .populate('id_local')
+        .populate('id_organizador');
     if (!evento) {
         return next(new ErrorResponse(`Evento não encontrado com o id ${req.params.id}`, 404));
     }
@@ -74,7 +85,12 @@ const updateEvento = asyncHandler(async (req, res, next) => {
     const evento = await Evento.findByIdAndUpdate(req.params.id, req.body, {
         new: true,
         runValidators: true
-    });
+    })
+    .populate('tiposBilhete')
+    .populate('categoria')
+    .populate('id_local')
+    .populate('id_organizador');
+    
     if (!evento) {
         return next(new ErrorResponse(`Evento não encontrado com o id ${req.params.id}`, 404));
     }

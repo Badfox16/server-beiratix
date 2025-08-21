@@ -29,5 +29,10 @@ export const validateUpdateUsuario = [
     body('telefone')
         .optional({ checkFalsy: true })
         .trim()
-        .isString()
+        .isString(),
+
+    body('role')
+        .optional()
+        .isIn(['utilizador', 'organizador', 'admin'])
+        .withMessage('Função deve ser: utilizador, organizador ou admin')
 ];

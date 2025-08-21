@@ -35,7 +35,12 @@ router.use('/:eventoId/comentarios', comentarioRouter);
 
 
 router.route('/')
-    .get(advancedResults(Evento, { path: 'tiposBilhete categoria', select: 'nome preco' }, ['titulo', 'descricao']), getAllEventos)
+    .get(advancedResults(Evento, [
+        { path: 'tiposBilhete', select: 'nome preco' },
+        { path: 'categoria', select: 'nome icon' },
+        { path: 'id_local', select: 'nome endereco tipo capacidade' },
+        { path: 'id_organizador', select: 'nome emailContato telefoneContato' }
+    ], ['titulo', 'descricao']), getAllEventos)
     .post(checkJwt, imageUploadHandler, validateEvento, handleValidationErrors, createEvento);
 
 router.route('/:id')
