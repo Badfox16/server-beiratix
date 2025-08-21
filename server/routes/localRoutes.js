@@ -5,7 +5,8 @@ import {
     getAllLocais,
     getLocalById,
     updateLocal,
-    deleteLocal
+    deleteLocal,
+    removeImageFromLocal
 } from '@/controllers/localController.js';
 import checkJwt from '@/middleware/authMiddleware.js';
 import imageUploadHandler from '@/middleware/imageUploadHandler.js';
@@ -26,6 +27,7 @@ router.route('/:id')
     .delete(checkJwt, deleteLocal);
 
 router.route('/:id/images')
-    .post(checkJwt, imageUploadHandler, handleValidationErrors, addImagesToLocal);
+    .post(checkJwt, imageUploadHandler, handleValidationErrors, addImagesToLocal)
+    .delete(checkJwt, removeImageFromLocal);
 
 export default router;

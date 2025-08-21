@@ -233,6 +233,33 @@ const deleteTipoBilheteFromEvento = asyncHandler(async (req, res, next) => {
     res.success({});
 });
 
+// @desc    Remove uma imagem específica de um evento
+// @route   DELETE /api/v1/eventos/:id/images
+// @access  Privado
+const removeImageFromEvento = asyncHandler(async (req, res, next) => {
+    const { imageUrl } = req.body;
+    
+    if (!imageUrl) {
+        return next(new ErrorResponse('URL da imagem é obrigatória', 400));
+    }
+
+    const evento = await Evento.findById(req.params.id);
+    if (!evento) {
+        return next(new ErrorResponse(`Evento não encontrado com o id ${req.params.id}`, 404));
+    }
+
+    // Remove a imagem do array
+    const imageIndex = evento.images.indexOf(imageUrl);
+    if (imageIndex === -1) {
+        return next(new ErrorResponse('Imagem não encontrada no evento', 404));
+    }
+
+    evento.images.splice(imageIndex, 1);
+    await evento.save();
+
+    res.success(evento);
+});
+
 export {
     createEvento,
     addImagesToEvento,
@@ -240,6 +267,7 @@ export {
     getEventoById,
     updateEvento,
     deleteEvento,
+    removeImageFromEvento,
     createTipoBilheteForEvento,
     getAllTiposBilheteFromEvento,
     getTipoBilheteFromEvento,

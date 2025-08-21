@@ -6,6 +6,7 @@ import {
     getEventoById,
     updateEvento,
     deleteEvento,
+    removeImageFromEvento,
     // --- Funções para recursos aninhados ---
     createTipoBilheteForEvento,
     getAllTiposBilheteFromEvento,
@@ -49,7 +50,8 @@ router.route('/:id')
     .delete(checkJwt, deleteEvento);
 
 router.route('/:id/images')
-    .post(checkJwt, imageUploadHandler, handleValidationErrors, addImagesToEvento);
+    .post(checkJwt, imageUploadHandler, handleValidationErrors, addImagesToEvento)
+    .delete(checkJwt, removeImageFromEvento);
 
 // --- ROTAS ANINHADAS PARA TIPOS DE BILHETE ---
 // Endpoint: /api/v1/eventos/:eventoId/tipos-bilhete

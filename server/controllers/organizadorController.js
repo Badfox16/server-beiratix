@@ -54,10 +54,56 @@ const deleteOrganizador = asyncHandler(async (req, res, next) => {
     res.success({});
 });
 
+// @desc    Upload de logo do organizador
+// @route   POST /api/v1/organizadores/:id/logo
+// @access  Privado
+const uploadLogoOrganizador = asyncHandler(async (req, res, next) => {
+    const organizador = await Organizador.findById(req.params.id);
+    
+    if (!organizador) {
+        return next(new ErrorResponse(`Organizador não encontrado com o id ${req.params.id}`, 404));
+    }
+
+    if (!req.cloudinaryUrls || req.cloudinaryUrls.length === 0) {
+        return next(new ErrorResponse('Nenhuma imagem foi enviada', 400));
+    }
+
+    // Para organizador, usamos apenas a primeira imagem como logo
+    organizador.imagemLogo = req.cloudinaryUrls[0];
+    await organizador.save();
+
+    res.success(organizador);
+});
+
+// @desc    Remove logo do organizador
+// @route   DELETE /api/v1/organizadores/:id/images
+// @access  Privado
+const removeLogoOrganizador = asyncHandler(async (req, res, next) => {
+    console.log('=== REMOVE LOGO ORGANIZADOR ===');
+    console.log('ID do organizador:', req.params.id);
+    console.log('req.body:', req.body);
+    
+    const organizador = await Organizador.findById(req.params.id);
+    
+    if (!organizador) {
+        console.log('Organizador não encontrado');
+        return next(new ErrorResponse(`Organizador não encontrado com o id ${req.params.id}`, 404));
+    }
+
+    // Para organizador, simplesmente remove o logo
+    organizador.imagemLogo = undefined;
+    await organizador.save();
+
+    console.log('Logo removido com sucesso');
+    res.success(organizador);
+});
+
 export {
     createOrganizador,
     getAllOrganizadores,
     getOrganizadorById,
     updateOrganizador,
-    deleteOrganizador
+    deleteOrganizador,
+    uploadLogoOrganizador,
+    removeLogoOrganizador
 };

@@ -86,11 +86,39 @@ const deleteLocal = asyncHandler(async (req, res, next) => {
     res.success({});
 });
 
+// @desc    Remove uma imagem específica de um local
+// @route   DELETE /api/v1/locais/:id/images
+// @access  Privado
+const removeImageFromLocal = asyncHandler(async (req, res, next) => {
+    const { imageUrl } = req.body;
+    
+    if (!imageUrl) {
+        return next(new ErrorResponse('URL da imagem é obrigatória', 400));
+    }
+
+    const local = await Local.findById(req.params.id);
+    if (!local) {
+        return next(new ErrorResponse(`Local não encontrado com o id ${req.params.id}`, 404));
+    }
+
+    // Remove a imagem do array
+    const imageIndex = local.imagens.indexOf(imageUrl);
+    if (imageIndex === -1) {
+        return next(new ErrorResponse('Imagem não encontrada no local', 404));
+    }
+
+    local.imagens.splice(imageIndex, 1);
+    await local.save();
+
+    res.success(local);
+});
+
 export {
     createLocal,
     addImagesToLocal,
     getAllLocais,
     getLocalById,
     updateLocal,
-    deleteLocal
+    deleteLocal,
+    removeImageFromLocal
 };
